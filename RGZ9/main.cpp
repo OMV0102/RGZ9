@@ -9,10 +9,10 @@ LPCSTR ClassName = "main_class";
 LPCSTR Title = "Сетевое подключение";
 
 using namespace std;
-stringstream stream;
-stringstream stream_error;
-char info[256];
+string text;
+string string_error;
 HWND hwnd;
+HWND hwnd_label;
 //int fstatus = 0;
 //int fstatus_old = -1;
 
@@ -26,25 +26,22 @@ DWORD WINAPI ThreadFunc(void*) // A function of access to dynamic library
 		int flag_connect;
         typedef int (*ImportFunction1)(); //Import
 		ImportFunction1 is_connect = (ImportFunction1)GetProcAddress(hinstLib,"is_connect");
-		stream.str("");
+		
         if(is_connect != NULL)
         {
 			flag_connect = is_connect();//Receive a data to apply a picture
-
-			stream << endl;
-			sprintf(info, "\n");
+										
+			text = "\n";
 			if (flag_connect)//Solution
-				strcat(info, "Сетевое подключение:    Есть!\n\n");
-				//stream << "Сетевое подключение:    Есть!\n\n";
+				text += "Сетевое подключение:    Есть!\n\n";
             else
-				//stream << "Сетевое подключение:    Нет!\n\n";
-				strcat(info, "Сетевое подключение:    Нет!\n\n");
+				text += "Сетевое подключение:    Нет!\n\n";
         }
 		else 
 		{
-			stream_error.str("");
-			stream_error << "Функция is_connect не найдена в " << LIBRARY_NAME;
-            MessageBox(hwnd, (stream_error.str()).c_str(), "Ошибка", MB_OK | MB_ICONERROR);
+			string_error = "";
+			string_error += "Функция is_connect не найдена в "; string_error += LIBRARY_NAME;
+            MessageBox(hwnd, string_error.c_str(), "Ошибка", MB_OK | MB_ICONERROR);
 		} 
 
 
@@ -52,32 +49,30 @@ DWORD WINAPI ThreadFunc(void*) // A function of access to dynamic library
 		ImportFunction2 HT = (ImportFunction2)GetProcAddress(hinstLib, "is_Hyper_Threading");
         if(HT != NULL)
         {
-			flag_HT = HT();//Receive a data to apply a picture
-            if(flag_HT)//Solution
-				//stream << "Технология Hyper Threading:    поддерживается!\n";
-				strcat(info, "Технология Hyper Threading:    поддерживается!\n");
+			flag_HT = HT();
+            if(flag_HT)
+				text += "Технология Hyper Threading:    поддерживается!\n";
             else
-				//stream << "Технология Hyper Threading:    НЕ поддерживается!\n";
-				strcat(info, "Технология Hyper Threading:    НЕ поддерживается!\n");
-
+				text += "Технология Hyper Threading:    НЕ поддерживается!\n";
+			SetWindowText(hwnd_label, text.c_str());
             //strcpy(info, (stream.str()).c_str());
         }
 		else 
 		{
-			stream_error.str("");
-			stream_error << "Функция is_connect не найдена в " << LIBRARY_NAME;
-			MessageBox(hwnd, (stream_error.str()).c_str(), "Ошибка", MB_OK | MB_ICONERROR);
+			string_error = "";
+			string_error += "Функция is_Hyper_Threading не найдена в "; string_error += LIBRARY_NAME;
+			MessageBox(hwnd, string_error.c_str(), "Ошибка", MB_OK | MB_ICONERROR);
 		}            
         FreeLibrary(hinstLib);// Free
     }
     else 
 	{
 		// Если файла с динамической библиотекой отсутствует
-		stream_error.str("");
-		stream_error << LIBRARY_NAME << "не найдена!" << endl;
-		stream_error <<	"Поместите файл " << LIBRARY_NAME << " в папку с программой" << endl;
-		stream_error << "и запустите программу еще раз.";
-		MessageBox(hwnd, (stream_error.str()).c_str(), "Ошибка", MB_OK | MB_ICONERROR);
+		string_error = "";
+		string_error += LIBRARY_NAME; string_error += " не найдена!\n";
+		string_error += "Поместите файл "; string_error += LIBRARY_NAME; string_error += " в папку с программой\n";
+		string_error += "и запустите программу еще раз.";
+		MessageBox(hwnd, string_error.c_str(), "Ошибка", MB_OK | MB_ICONERROR);
 	}
 	return 0;
 }
@@ -131,7 +126,7 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) /
 			
 			hdc = BeginPaint(hwnd, &ps);
 			//TextOut(hdc, 10, 10, (stream.str()).c_str(), (stream.str()).length());
-			TextOut(hdc, 0, 0, info, strlen(info));
+			//TextOut(hdc, 15, 15, info, strlen(info));
 			EndPaint(hwnd, &ps);
 			/*if(fstatus != fstatus_old)
 			{
@@ -147,6 +142,18 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) /
 			break;
 		}
 			
+		case WM_CTLCOLORSTATIC:
+		{
+			DWORD CtrlID = GetDlgCtrlID((HWND)lParam);
+			if (CtrlID == 1024)
+			{
+				SetTextColor((HDC)wParam, RGB(30, 200, 30));
+				SetBkColor((HDC)wParam, RGB(0, 0, 0));
+				return (INT_PTR)GetStockObject(BLACK_BRUSH);
+			}
+			break;
+		}
+		
 		default: 
 		{
 			return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -201,23 +208,48 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     CreateWindow("btn_exit", "Закрыть", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, window_width - border - button_width, window_height - border - button_height, button_width, button_height, hwnd, (HMENU)1026, hInstance, NULL);
     SendDlgItemMessage(hwnd, 1026, WM_SETFONT, (WPARAM)font_std, TRUE);*/
 	
+	int win_width = 500;  // Ширина окна
+	
+	int label_X = 5; // Горизонтальное расположение label
+	int label_Y = 5;  // Вертикальное расположение label
+	int label_width = win_width - label_X * 2;  // Ширина label
+	int label_height = 100;  // Высота label
+	
+	int win_height = label_height + 200;  // Высота окна
+	
 	hwnd = CreateWindow(
 		ClassName, // Имя окна
 		Title,  // Текст в заголовке окна
 		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,  //  Стиль окна
 		50, // Горизонтальное расположение окна
 		200,  // Вертикальное расположение окна
-		1500,  // Ширина окна
-		300,  // Высота окна
+		win_width,  // Ширина окна
+		win_height,  // Высота окна
 		HWND_DESKTOP, // Дескриптор (родительского) окна владельца
 		NULL, // Дескриптор меню или ID дочернего окна
 		hThisInst,  // Дескриптор экземпляра приложения
 		NULL);  // Указатель на данные создания окна
 
+
+
+	hwnd_label = CreateWindow(
+		"label",
+		"hhhhhhhhhhhhh",
+		WS_CHILD | WS_VISIBLE | WS_BORDER,
+		label_X,  // Горизонтальное расположение label
+		label_Y,  // Вертикальное расположение label
+		label_width, // Ширина label
+		label_height,  // Высота label
+		hwnd,
+		(HMENU)1024,
+		hThisInst,
+		NULL);
+	HFONT font_mono = (HFONT)GetStockObject(OEM_FIXED_FONT);
+	SendDlgItemMessage(hwnd, 1024, WM_SETFONT, (WPARAM)font_mono, TRUE);
     ShowWindow(hwnd, nWinMode);
     UpdateWindow(hwnd);
     
-    while(GetMessage(&msg, NULL, 0, 0))//Loop
+    while(GetMessage(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
