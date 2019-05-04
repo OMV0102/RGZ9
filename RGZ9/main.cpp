@@ -86,15 +86,15 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) /
 	HDC hdc;
     switch (msg)
     {
-		case WM_CREATE: 
+		/*case WM_CREATE: 
 		{
 			hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread);
 			WaitForSingleObject(hThread, INFINITE);
 			CloseHandle(hThread);
 			break;
-		}
+		}*/
 		
-		/*
+		
 		case WM_CTLCOLORSTATIC:// Text and background
 		{
 			DWORD CtrlID = GetDlgCtrlID((HWND)lParam);
@@ -105,9 +105,9 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) /
 				return (INT_PTR)GetStockObject(BLACK_BRUSH);
 			}
 			break;
-		}*/
+		}
 		
-		/*case WM_COMMAND:
+		case WM_COMMAND:
 		{
 			if (LOWORD(wParam) == 1025)
 			{
@@ -119,7 +119,7 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) /
 			if (LOWORD(wParam) == 1026)
 				PostQuitMessage(0);
 			break;
-		}*/
+		}
 		
 		case WM_PAINT:
 		{ 
@@ -139,18 +139,6 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) /
 		case WM_DESTROY: 
 		{
 			PostQuitMessage(0);
-			break;
-		}
-			
-		case WM_CTLCOLORSTATIC:
-		{
-			DWORD CtrlID = GetDlgCtrlID((HWND)lParam);
-			if (CtrlID == 1024)
-			{
-				SetTextColor((HDC)wParam, RGB(30, 200, 30));
-				SetBkColor((HDC)wParam, RGB(0, 0, 0));
-				return (INT_PTR)GetStockObject(BLACK_BRUSH);
-			}
 			break;
 		}
 		
@@ -182,7 +170,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 	wcl.lpszMenuName = NULL;
 	wcl.cbWndExtra = 0;
 	wcl.cbClsExtra = 0;
-	wcl.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	//wcl.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	wcl.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
     RegisterClass(&wcl);
 
     /*int window_width = 500;
@@ -246,6 +235,25 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 		NULL);
 	HFONT font_mono = (HFONT)GetStockObject(OEM_FIXED_FONT);
 	SendDlgItemMessage(hwnd, 1024, WM_SETFONT, (WPARAM)font_mono, TRUE);
+	DWORD IDThread;
+	HANDLE hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread);
+	CloseHandle(hThread);
+
+	CreateWindow("button",
+		"Run",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		win_width + 10,
+		label_height + 10,
+		90,
+		30,
+		hwnd,
+		(HMENU)1025,
+		hThisInst,
+		NULL);
+	HFONT font_std = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+	SendDlgItemMessage(hwnd, 1025, WM_SETFONT, (WPARAM)font_std, TRUE);
+
+
     ShowWindow(hwnd, nWinMode);
     UpdateWindow(hwnd);
     
