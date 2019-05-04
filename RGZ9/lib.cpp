@@ -1,16 +1,20 @@
 #include <windows.h>
-extern "C" __declspec(dllexport) int ifconnected() // Function to detect of connection
+
+// функци€ определ€юща€ наличие сетевого соединени€
+extern "C" __declspec(dllexport) int is_connect() 
 {
-    int wc = GetSystemMetrics(SM_NETWORK);
+    int net = GetSystemMetrics(SM_NETWORK);
 	__asm // Receive a first bit
 	{
-		mov edx, wc
+		mov edx, net
 		and edx, 1 // A very simple bit mask
-		mov wc, edx
+		mov net, edx
 	}
-	return wc;
+	return net;
 }
-extern "C" __declspec(dllexport) int htt_support() // Function of detection of Hyper Threating Technology
+
+// функци€ определ€юща€ наличие Hyper Threating Technology
+extern "C" __declspec(dllexport) int htt_support()
 {
     int htt;
     __asm
