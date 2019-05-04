@@ -14,7 +14,7 @@ extern "C" __declspec(dllexport) int is_connect()
 }
 
 // функци€ определ€юща€ наличие Hyper Threating Technology
-extern "C" __declspec(dllexport) int htt_support()
+extern "C" __declspec(dllexport) int is_Hyper_Threading()
 {
     int htt;
     __asm
