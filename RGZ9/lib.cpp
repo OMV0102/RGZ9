@@ -1,29 +1,29 @@
 #include <windows.h>
 
-// функция определяющая наличие сетевого соединения
+// С„СѓРЅРєС†РёВ¤ РѕРїСЂРµРґРµР»В¤СЋС‰Р°В¤ РЅР°Р»РёС‡РёРµ СЃРµС‚РµРІРѕРіРѕ СЃРѕРµРґРёРЅРµРЅРёВ¤
 extern "C" __declspec(dllexport) int is_connect() 
 {
     int net = GetSystemMetrics(SM_NETWORK);
-	__asm // Receive a first bit
+	__asm
 	{
-		MOV EAX, net
-		AND EAX, 00000001h // A very simple bit mask
+		MOV EAX, net   // РїРѕРјРµС‰Р°РµРј Р·РЅР°С‡РµРЅРёРµ РІ СЂРµРіРёСЃС‚СЂ EAX
+		AND EAX, 00000001h
 		MOV net, EAX
 	}
 	return net;
 }
 
-// функция определяющая наличие Hyper Threating Technology
+// С„СѓРЅРєС†РёВ¤ РѕРїСЂРµРґРµР»В¤СЋС‰Р°В¤ РЅР°Р»РёС‡РёРµ С‚РµС…РЅРѕР»РѕРіРёРё Hyper Threating
 extern "C" __declspec(dllexport) int is_Hyper_Threading()
 {
     int HT;
     __asm
     {
-        mov eax, 1
+        mov EAX, 1 // РІС‹РїРѕР»РЅВ¤РµРј EAX =1
         cpuid
-        and edx, 10000000h // A bit mask
-        shr edx, 28
-        mov HT, edx
+        and EDX, 10000000h // A bit mask
+        shr EDX, 28
+        mov HT, EDX
     }
     return HT;
 }
