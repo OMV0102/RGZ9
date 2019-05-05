@@ -1,6 +1,5 @@
 #include <windows.h>
 #include <string>
-#include <sstream>
 #include <locale.h>
 #define LIB_NAME "lib.dll" // имя библиотеки
 
@@ -13,20 +12,20 @@ string text_net; // строка с информацией о сетевом подключении
 string text_HT; // строка с информацией о поддержке Hyper_Threading
 string text_error; // строка с информацией о возникшей ошибке
 
-HWND hwnd; // дескрипотр окна
+HWND hwnd; // дескриптор окна
 
 // функция вызывающая функции, определенные в динамической библиотеке
 DWORD WINAPI ThreadFunc(void*)
 {
 	// загрузка динамической библиотеки
 	HINSTANCE library = LoadLibrary(TEXT(LIB_NAME));
-	if (library != NULL)
+	if (library != NULL) // если библиотека загрузилась успешно
 	{
 		// числовые флаги равные 1, если ДА, 0, если НЕТ, -1, если значение неопределенно 
 		int flag_connect; // наличие подключения
 		int flag_HT; // поддрежка HT
 
-		text_error = "";
+		text_error = "";  // зануляем строку для вывода текста ошибок
 
 		typedef int(*ImportFunction1)();  // тип указателя на функцию1
 		typedef int(*ImportFunction2)();// тип указателя на функцию2
@@ -92,8 +91,9 @@ DWORD WINAPI ThreadFunc(void*)
 
 		FreeLibrary(library); // закрываем динамическую библиотеку, освобождая дескриптор
 	}
-	else
+	else // если библиотека НЕ загрузилась 
 	{
+		// формируем сообщение об ошибке и выводим диалоговое окно
 		text_error = "Файл ";
 		text_error += LIB_NAME; text_error += " не найден!\n";
 		text_error += "Поместите файл "; text_error += LIB_NAME; text_error += " в папку с программой\n";
