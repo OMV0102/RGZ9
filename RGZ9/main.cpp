@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <string>
-#include <locale.h>
+
 #define LIB_NAME "lib.dll" // имя библиотеки
 
 using namespace std;
@@ -29,7 +29,7 @@ DWORD WINAPI ThreadFunc(void*)
 
 		typedef int(*ImportFunction1)();  // тип указателя на функцию1
 		typedef int(*ImportFunction2)();// тип указателя на функцию2
-		// загрузка функциий, определенных в библиотеке
+		// загрузка функций, определенных в библиотеке
 		ImportFunction1 is_connect = (ImportFunction1)GetProcAddress(library, "is_connect");
 		ImportFunction2 is_HT = (ImportFunction2)GetProcAddress(library, "is_Hyper_Threading");
 
@@ -66,7 +66,7 @@ DWORD WINAPI ThreadFunc(void*)
 			// из ассемблерной вставки
 			flag_HT = is_HT();
 			// Если значение равно единицу
-			// поддрежка технологии есть
+			// поддержка технологии есть
 			// иначе нет
 			if (flag_HT == 1)
 				text_HT += "поддерживается.";
@@ -141,6 +141,7 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+//основная функция программы
 int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWinMode)
 {
 	MSG msg;
