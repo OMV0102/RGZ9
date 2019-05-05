@@ -6,7 +6,7 @@
 
 using namespace std;
 
-LPCSTR ClassName = "main_class";
+LPCSTR ClassName = "class_form";
 LPCSTR Title = "Сетевое подключение";
 
 string text_net;
@@ -23,31 +23,46 @@ DWORD WINAPI ThreadFunc(void*)
 	{
 		typedef int(*ImportFunction1)();
 		ImportFunction1 is_connect = (ImportFunction1)GetProcAddress(hinstLib, "is_connect");
+		text_net = "Сетевое подключение:   ";
 		if (is_connect != NULL)
 		{
 			int flag_connect = is_connect();
 			if (flag_connect == 1)
-				text_net = "Сетевое подключение:   ЕСТЬ.";
+				text_net += "ЕСТЬ.";
 			else
-				text_net = "Сетевое подключение:   НЕТ.";
+				text_net += "НЕТ.";
 		}
 		else 
-			MessageBox(hwnd, "int ifconnected() not found in lib.dll", "Error", MB_OK | MB_ICONERROR);
+		{
+			text_error = "";
+			text_error += "Не удалось определить наличие сетевого подключения!";
+			text_net += "неопределенно.";
+			MessageBox(hwnd, text_error.c_str(), "Ошибка", MB_OK | MB_ICONERROR);
+		}
+
+			
 
 		typedef int(*ImportFunction2)();
 		ImportFunction2 is_HT = (ImportFunction2)GetProcAddress(hinstLib, "is_Hyper_Threading");
+		text_HT = "Технология Hyper Threading:   ";
 		if (is_HT != NULL)
 		{
 			int flag_HT = is_HT();
 
 			if (flag_HT == 1)
-				text_HT = "Технология Hyper Threading:   поддержтвается.";
+				text_HT += "поддерживается.";
 			else
-				text_HT = "Технология Hyper Threading:   НЕ поддреживается.";
+				text_HT += "НЕ поддерживается.";
 
 		}
 		else
-			MessageBox(hwnd, "int htt_support() not found in lib.dll", "Error", MB_OK | MB_ICONERROR);
+		{
+			text_error = "";
+			text_error += "Не удалось определить поддержку технологии Hyper Threading!";
+			text_HT += "неопределенно.";
+			MessageBox(hwnd, text_error.c_str(), "Ошибка", MB_OK | MB_ICONERROR);
+		}
+			
 		FreeLibrary(hinstLib);
 	}
 	else 
@@ -56,7 +71,7 @@ DWORD WINAPI ThreadFunc(void*)
 		text_error += LIB_NAME; text_error += " не найден!\n";
 		text_error += "Поместите файл "; text_error += LIB_NAME; text_error += " в папку с программой\n";
 		text_error += "и запустите программу еще раз.";
-		MessageBox(hwnd, text_error.c_str(), "Error", MB_OK | MB_ICONERROR);
+		MessageBox(hwnd, text_error.c_str(), "Ошибка", MB_OK | MB_ICONERROR);
 	} 
 	return 0;
 }
@@ -73,8 +88,10 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) /
 			{
 				HANDLE hThread;
 				DWORD IDThread;
-				hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread); //Function in thread
+				hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread);
 				CloseHandle(hThread);
+				UpdateWindow(hwnd);
+
 			}
 			if (LOWORD(wParam) == 1026)
 				PostQuitMessage(0);
@@ -104,7 +121,6 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) /
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	setlocale(LC_ALL, "Russian");
 	WNDCLASS wnd;
 	RECT rt;
 	HANDLE hThread;
@@ -116,16 +132,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	wnd.lpfnWndProc = WindowFunc;
 	wnd.hInstance = hInstance;
 	wnd.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
-	wnd.lpszClassName = "main_class";
+	wnd.lpszClassName = ClassName;
 	wnd.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
 	RegisterClass(&wnd);
-	int window_width = 200;
+	int window_width = 700;
 	int window_height = 300;
 	int button_width = 90;
 	int button_height = 30;
 	int border = 3;
 	HDC hDCScreen = GetDC(NULL);
-	hwnd = CreateWindow("main_class", "MR RGR", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+	hwnd = CreateWindow(ClassName, Title, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 		(GetDeviceCaps(hDCScreen, HORZRES) - window_width) / 2, (GetDeviceCaps(hDCScreen, VERTRES) - window_height) / 2,
 		window_width, window_height, NULL, NULL, hInstance, NULL);
 	GetClientRect(hwnd, &rt);
@@ -141,7 +157,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	CloseHandle(hThread);//Buttons below
 	CreateWindow("button", "Run", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, window_width - 2 * (border + button_width), window_height - border - button_height, button_width, button_height, hwnd, (HMENU)1025, hInstance, NULL);
 	SendDlgItemMessage(hwnd, 1025, WM_SETFONT, (WPARAM)font_std, TRUE);
-	CreateWindow("button", "Exit", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, window_width - border - button_width, window_height - border - button_height, button_width, button_height, hwnd, (HMENU)1026, hInstance, NULL);
+	CreateWindow("button", "Закрыть", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, window_width - border - button_width, window_height - border - button_height, button_width, button_height, hwnd, (HMENU)1026, hInstance, NULL);
 	SendDlgItemMessage(hwnd, 1026, WM_SETFONT, (WPARAM)font_std, TRUE);
 
 	ShowWindow(hwnd, nCmdShow);
