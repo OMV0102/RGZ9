@@ -17,16 +17,23 @@ HWND hwnd;
 
 DWORD WINAPI ThreadFunc(void*)
 {
-	setlocale(LC_ALL, "Russian");
 	HINSTANCE hinstLib = LoadLibrary(TEXT(LIB_NAME)); 
 	if (hinstLib != NULL) 
 	{
+		int flag_connect;
+		int flag_HT;
+		bool flag_mbox = false;
 		typedef int(*ImportFunction1)();
 		ImportFunction1 is_connect = (ImportFunction1)GetProcAddress(hinstLib, "is_connect");
+		typedef int(*ImportFunction2)();
+		ImportFunction2 is_HT = (ImportFunction2)GetProcAddress(hinstLib, "is_Hyper_Threading");
+
 		text_net = "Сетевое подключение:   ";
+		text_HT = "Технология Hyper Threading:   ";
+
 		if (is_connect != NULL)
 		{
-			int flag_connect = is_connect();
+			flag_connect = is_connect();
 			if (flag_connect == 1)
 				text_net += "ЕСТЬ.";
 			else
@@ -34,32 +41,41 @@ DWORD WINAPI ThreadFunc(void*)
 		}
 		else 
 		{
-			text_error = "";
-			text_error += "Не удалось определить наличие сетевого подключения!";
+			flag_connect = -1;
 			text_net += "неопределенно.";
-			MessageBox(hwnd, text_error.c_str(), "Ошибка", MB_OK | MB_ICONERROR);
 		}
-
-			
-
-		typedef int(*ImportFunction2)();
-		ImportFunction2 is_HT = (ImportFunction2)GetProcAddress(hinstLib, "is_Hyper_Threading");
-		text_HT = "Технология Hyper Threading:   ";
+		
 		if (is_HT != NULL)
 		{
-			int flag_HT = is_HT();
+			flag_HT = is_HT();
 
 			if (flag_HT == 1)
 				text_HT += "поддерживается.";
 			else
 				text_HT += "НЕ поддерживается.";
-
 		}
 		else
 		{
-			text_error = "";
-			text_error += "Не удалось определить поддержку технологии Hyper Threading!";
+			flag_HT = -1;
 			text_HT += "неопределенно.";
+		}
+
+		text_error = "";
+		if (flag_connect == -1)
+		{
+			text_error += "Не удалось определить наличие сетевого подключения!\n";
+			flag_mbox = true;
+		}
+
+		if (flag_HT == -1)
+		{
+			text_error += "Не удалось определить поддержку технологии Hyper Threading!";
+			flag_mbox = true;
+		}
+
+
+		if (flag_mbox == true)
+		{
 			MessageBox(hwnd, text_error.c_str(), "Ошибка", MB_OK | MB_ICONERROR);
 		}
 			
@@ -76,7 +92,7 @@ DWORD WINAPI ThreadFunc(void*)
 	return 0;
 }
 
-LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) // Message processor
+LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
 	HDC hdc;
@@ -91,7 +107,6 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) /
 				hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread);
 				CloseHandle(hThread);
 				UpdateWindow(hwnd);
-
 			}
 			if (LOWORD(wParam) == 1026)
 				PostQuitMessage(0);
