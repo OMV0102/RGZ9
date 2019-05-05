@@ -1,6 +1,6 @@
 #include <windows.h>
 
-// функци¤ определ¤юща¤ наличие сетевого соединени¤
+// функция определяющая наличие сетевого соединения
 extern "C" __declspec(dllexport) int is_connect() 
 {
     int net = GetSystemMetrics(SM_NETWORK);
@@ -13,13 +13,13 @@ extern "C" __declspec(dllexport) int is_connect()
 	return net;
 }
 
-// функци¤ определ¤юща¤ наличие технологии Hyper Threating
+// функция определяющая наличие технологии Hyper Threating
 extern "C" __declspec(dllexport) int is_Hyper_Threading()
 {
     int HT;
     __asm
     {
-        mov EAX, 1 // выполн¤ем EAX =1
+        mov EAX, 1 // выполняем EAX =1
         cpuid
         and EDX, 10000000h // A bit mask
         shr EDX, 28
