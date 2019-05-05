@@ -1,146 +1,110 @@
 #include <windows.h>
 #include <string>
 #include <sstream>
+#include <locale.h>
+#define LIB_NAME "lib.dll"
 
 using namespace std;
 
-HWND hwnd, MSLabel;
+LPCSTR ClassName = "main_class";
+LPCSTR Title = "Сетевое подключение";
 
-int fstatus = 0, fstatus_old = -1;
+string text_net;
+string text_HT;
+string text_error;
 
-void thread() // A function of access to dynamic library
+HWND hwnd;
+
+DWORD WINAPI ThreadFunc(void*)
 {
-	HINSTANCE hinstLib = LoadLibrary(TEXT("lib.dll")); //A handle to instance of dynamic library
-	if (hinstLib != NULL) //If we receive a handle
+	setlocale(LC_ALL, "Russian");
+	HINSTANCE hinstLib = LoadLibrary(TEXT(LIB_NAME)); 
+	if (hinstLib != NULL) 
 	{
-		int htt, ifc; //Variables of status of connection and htt-support
-		stringstream lbl; //An occurrence of stream class to operate on strings
-		lbl << "PM-01, Kurochkin A.V." << endl << "    variant 9" << endl << endl;//Add a signature
-		typedef int(*ifconnected_)(); //Import
-		ifconnected_ ifconnected = (ifconnected_)GetProcAddress(hinstLib, "is_connect");
-		if (ifconnected != NULL)
+		typedef int(*ImportFunction1)();
+		ImportFunction1 is_connect = (ImportFunction1)GetProcAddress(hinstLib, "is_connect");
+		if (is_connect != NULL)
 		{
-			ifc = ifconnected();//Receive a data to apply a picture
-			if (ifc == 1)//Solution
-				lbl << "LEVEL III:" << endl << "    Network connection" << endl << "    is detected!" << endl;
+			int flag_connect = is_connect();
+			if (flag_connect == 1)
+				text_net = "Сетевое подключение:   ЕСТЬ.";
 			else
-				lbl << "LEVEL III:" << endl << "    Network connection" << endl << "    is not detected!" << endl;
+				text_net = "Сетевое подключение:   НЕТ.";
 		}
-		else // If something wrong with dynamic library
+		else 
 			MessageBox(hwnd, "int ifconnected() not found in lib.dll", "Error", MB_OK | MB_ICONERROR);
-		typedef int(*htt_support_)();//HTT section
-		htt_support_ htt_support = (htt_support_)GetProcAddress(hinstLib, "is_Hyper_Threading");
-		if (htt_support != NULL)
+
+		typedef int(*ImportFunction2)();
+		ImportFunction2 is_HT = (ImportFunction2)GetProcAddress(hinstLib, "is_Hyper_Threading");
+		if (is_HT != NULL)
 		{
-			htt = htt_support();//Receive a data to apply a picture
-			//lbl << ifc << " " << htt << endl;
-			lbl << "LEVEL IV:" << endl;
-			if (htt)//Solution
-				lbl << "    Hyper Threading" << endl << "    is supported!";
+			int flag_HT = is_HT();
+
+			if (flag_HT == 1)
+				text_HT = "Технология Hyper Threading:   поддержтвается.";
 			else
-				lbl << "    Hyper Threading" << endl << "    is not supported!";
-			if (ifc && htt) fstatus = 3; // Number of situation and picture
-			if (!ifc && htt) fstatus = 1;
-			if (ifc && !htt) fstatus = 2;
-			if (!ifc && !htt) fstatus = 0;
-			SetWindowText(MSLabel, (lbl.str()).c_str());
+				text_HT = "Технология Hyper Threading:   НЕ поддреживается.";
+
 		}
-		else// If something wrong with dynamic library
+		else
 			MessageBox(hwnd, "int htt_support() not found in lib.dll", "Error", MB_OK | MB_ICONERROR);
-		FreeLibrary(hinstLib);// Free
+		FreeLibrary(hinstLib);
 	}
-	else //If dynamic library did not found
-		MessageBox(hwnd, "lib.dll did not found! Put it into the program folder and click \"Run\"!", "Error", MB_OK | MB_ICONERROR);
+	else 
+	{
+		text_error = "";
+		text_error += LIB_NAME; text_error += " не найден!\n";
+		text_error += "Поместите файл "; text_error += LIB_NAME; text_error += " в папку с программой\n";
+		text_error += "и запустите программу еще раз.";
+		MessageBox(hwnd, text_error.c_str(), "Error", MB_OK | MB_ICONERROR);
+	} 
+	return 0;
 }
 
 LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) // Message processor
 {
-	int wmId, wmEvent;
-	static HDC memBit;
-	static HBITMAP hBitmap;
-	static BITMAP bm;
+	PAINTSTRUCT ps;
+	HDC hdc;
 	switch (msg)
 	{
-	case WM_CTLCOLORSTATIC:// Text and background
-	{
-		DWORD CtrlID = GetDlgCtrlID((HWND)lParam);
-		if (CtrlID == 1024)
+		case WM_COMMAND:
 		{
-			SetTextColor((HDC)wParam, RGB(30, 200, 30));
-			SetBkColor((HDC)wParam, RGB(0, 0, 0));
-			return (INT_PTR)GetStockObject(BLACK_BRUSH);
-		}
-	}
-	break;
-	case WM_COMMAND:
-	{
-		if (LOWORD(wParam) == 1025)
-		{
-			HANDLE hThread;
-			DWORD IDThread;
-			hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)thread, NULL, 0, &IDThread); //Function in thread
-			CloseHandle(hThread);
-		}
-		if (LOWORD(wParam) == 1026)
-			PostQuitMessage(0);
-	}
-	break;
-	case WM_PAINT: { //Output a bitmap
-		PAINTSTRUCT ps;
-		HDC hdc; //contrxt
-		if (fstatus != fstatus_old)
-		{
-			switch (fstatus)//Choice of bitmaps
+			if (LOWORD(wParam) == 1025)
 			{
-			case 3:
-				hBitmap = (HBITMAP)LoadImage(NULL, TEXT("images/11.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-				break;
-			case 2:
-				hBitmap = (HBITMAP)LoadImage(NULL, TEXT("images/10.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-				break;
-			case 1:
-				hBitmap = (HBITMAP)LoadImage(NULL, TEXT("images/01.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-				break;
-			case 0:
-				hBitmap = (HBITMAP)LoadImage(NULL, TEXT("images/00.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-				break;
-			};
-			if (hBitmap == NULL)// Load error
-			{
-				stringstream msg;
-				msg << "Image load error! An image did not found!";
-				MessageBox(hwnd, (msg.str()).c_str(), "Error", MB_OK | MB_ICONERROR);
-				//DestroyWindow(hwnd);
-				return 1;
+				HANDLE hThread;
+				DWORD IDThread;
+				hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread); //Function in thread
+				CloseHandle(hThread);
 			}
-			GetObject(hBitmap, sizeof(bm), &bm);
-			hdc = GetDC(hwnd);
-			memBit = CreateCompatibleDC(hdc);
-			SelectObject(memBit, hBitmap);
-			ReleaseDC(hwnd, hdc);
+			if (LOWORD(wParam) == 1026)
+				PostQuitMessage(0);
+			break;
 		}
-		hdc = BeginPaint(hwnd, &ps);
-		BitBlt(hdc, 20, 130, bm.bmWidth, bm.bmHeight, memBit, 0, 0, SRCCOPY);//вывод изображения
-		EndPaint(hwnd, &ps);
-		if (fstatus != fstatus_old)
+		
+		case WM_PAINT: 
+		{ 
+			hdc = BeginPaint(hwnd, &ps);
+			TextOut(hdc, 10, 120, text_net.c_str(), text_net.length());
+			TextOut(hdc, 10, 140, text_HT.c_str(), text_HT.length());
+			EndPaint(hwnd, &ps);
+			break;
+		}
+					   
+		case WM_DESTROY: 
 		{
-			InvalidateRect(hwnd, 0, 0);
-			UpdateWindow(hwnd);
-			fstatus_old = fstatus;
+			PostQuitMessage(0);
+			break;
 		}
+			
+		default:
+			return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
-				   break;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-	default:
-		return DefWindowProc(hwnd, msg, wParam, lParam);
-	}
-	return 0;
+		return 0;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	setlocale(LC_ALL, "Russian");
 	WNDCLASS wnd;
 	RECT rt;
 	HANDLE hThread;
@@ -168,12 +132,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	window_width = rt.right;
 	window_height = rt.bottom;
 
-	MSLabel = CreateWindow("static", "Click \"Run\" to get values", WS_CHILD | WS_VISIBLE | WS_BORDER,
+	HWND label = CreateWindow("static", "Click \"Run\" to get values", WS_CHILD | WS_VISIBLE | WS_BORDER,
 		border, border, window_width - 2 * border, (window_height - button_height - 4 * border) / 2,
 		hwnd, (HMENU)1024, hInstance, NULL);
 
 	SendDlgItemMessage(hwnd, 1024, WM_SETFONT, (WPARAM)font_mono, TRUE);
-	hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)thread, NULL, 0, &IDThread);
+	hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread);
 	CloseHandle(hThread);//Buttons below
 	CreateWindow("button", "Run", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, window_width - 2 * (border + button_width), window_height - border - button_height, button_width, button_height, hwnd, (HMENU)1025, hInstance, NULL);
 	SendDlgItemMessage(hwnd, 1025, WM_SETFONT, (WPARAM)font_std, TRUE);

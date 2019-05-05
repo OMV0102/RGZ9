@@ -6,9 +6,9 @@ extern "C" __declspec(dllexport) int is_connect()
     int net = GetSystemMetrics(SM_NETWORK);
 	__asm // Receive a first bit
 	{
-		mov eax, net
-		and eax, 00000001h // A very simple bit mask
-		mov net, eax
+		MOV EAX, net
+		AND EAX, 00000001h // A very simple bit mask
+		MOV net, EAX
 	}
 	return net;
 }
