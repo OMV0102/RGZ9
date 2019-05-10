@@ -1,4 +1,56 @@
 #include <windows.h>
+
+// функция определяющая наличие сетевого соединения
+extern "C" __declspec(dllexport) int is_connect() 
+{
+    int net = GetSystemMetrics(SM_NETWORK);
+	__asm
+	{
+		// ассемблерная вставка
+
+		MOV EAX, net   // помещаем значение в регистр EAX
+		// обнуляем биты с 31 по 1 с помощью логического И
+		// последний младший нулевой бит будет результатом
+		// если этот бит равен 1, значит соединение по сети возможно
+		// 1h - 16-ричное число,
+		// в двоичном представлении которого нулевой бит равен 1
+		AND EAX, 1h
+		// помещаем значение (нулевой бит) в переменную
+		// то есть  либо ноль, либо единицу
+		MOV net, EAX
+	}
+	return net;
+}
+
+// функция определяющая наличие технологии Hyper Threating
+extern "C" __declspec(dllexport) int is_Hyper_Threading()
+{
+    int HT;
+    __asm
+    {
+		// ассемблерная вставка
+
+		MOV EAX, 1 // выполняем EAX = 1
+		// вызываем функцию cpuid
+		//cpuid при EAX = 1 
+		// поместит единицу в 28 бит регистра EDX 
+		// если технология Hyper Threating поддреживается
+        cpuid
+		// обнуляем все биты кроме 28 с помощью логического И
+		// 10000000h - 16-ричное число,
+		// в двоичном представлении которого 28-ой бит равен 1
+        AND EDX, 10000000h
+		// производим побитовый сдвиг вправо
+		// на 28 битов, 28 бит теперь стоит на месте нулевого бита
+		// все остальные биты с 31 по 1 равны нулю
+        SHR EDX, 28
+		// помещаем значение (нулевой бит) в переменную
+		// то есть  либо ноль, либо единицу
+        MOV HT, EDX
+    }
+    return HT;
+}
+#include <windows.h>
 #include <string>
 
 #define LIB_NAME "lib.dll" // имя библиотеки
@@ -27,10 +79,11 @@ DWORD WINAPI ThreadFunc(void*)
 
 		text_error = "";  // зануляем строку для вывода текста ошибок
 
-		typedef int(*ImportFunction)();  // тип указателя на функцию
+		typedef int(*ImportFunction1)();  // тип указателя на функцию1
+		typedef int(*ImportFunction2)();// тип указателя на функцию2
 		// загрузка функций, определенных в библиотеке
-		ImportFunction is_connect = (ImportFunction)GetProcAddress(library, "is_connect");
-		ImportFunction is_HT = (ImportFunction)GetProcAddress(library, "is_Hyper_Threading");
+		ImportFunction1 is_connect = (ImportFunction1)GetProcAddress(library, "is_connect");
+		ImportFunction2 is_HT = (ImportFunction2)GetProcAddress(library, "is_Hyper_Threading");
 
 		text_net = "Сетевое подключение:   ";
 		text_HT = "Технология Hyper Threading:   ";
