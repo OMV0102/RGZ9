@@ -151,12 +151,6 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 	HANDLE hThread; // дескриптор потока
 	DWORD IDThread; // идентификатор потока
 
-	// —оздание потока дл€ запуска функции ThreadFunc
-	// выполн€етс€ до создани€ окна
-	hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread);
-	WaitForSingleObject(hThread, INFINITE);  // ожидание завершени€ потока
-	CloseHandle(hThread); // удаление дескриптора потока
-
 	wcl.hInstance = hThisInst; // дескриптор экземпл€ра, который содержит оконную процедуру дл€ класса
 	wcl.lpszClassName = ClassName; // им€ класса окна
 	wcl.lpfnWndProc = WindowFunc; // указатель на оконную процедуру
@@ -205,6 +199,10 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 		NULL, // дескриптор дочернего окна или меню
 		hThisInst, // дескриптор эксземпл€ра приложени€
 		NULL); // указатель на данные создани€ окна
+
+	// —оздание потока дл€ запуска функции ThreadFunc
+	hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread);
+	CloseHandle(hThread); // удаление дескриптора потока
 
 	//јктивизирует окно и показывает на экране
 	ShowWindow(hwnd, SW_SHOW);
