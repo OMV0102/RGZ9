@@ -106,9 +106,9 @@ DWORD WINAPI ThreadFunc(void*)
 // функция обрабатывающая сообщения
 LRESULT CALLBACK WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	
 	PAINTSTRUCT ps; // структура для рисования
 	HDC hdc; // контекст устройства
+
 	switch (msg)
 	{
 		case WM_COMMAND:
@@ -150,6 +150,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 	DWORD IDThread; // идентификатор потока
 
 	// Создание потока для запуска функции ThreadFunc
+	// выполняется до создания окна
 	hThread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, &IDThread);
 	WaitForSingleObject(hThread, INFINITE);  // ожидание завершения потока
 	CloseHandle(hThread); // удаление дескриптора потока
