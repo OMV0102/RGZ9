@@ -34,7 +34,7 @@ extern "C" __declspec(dllexport) int is_Hyper_Threading()
 		// вызываем функцию cpuid
 		//cpuid при EAX = 1 
 		// поместит единицу в 28 бит регистра EDX 
-		// если технология Hyper Threating поддреживается
+		// если технология Hyper Threating поддерживается
         cpuid
 		// обнуляем все биты кроме 28 с помощью логического И
 		// 10000000h - 16-ричное число,

@@ -181,7 +181,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 		150,  // высота окна
 		HWND_DESKTOP,  // дескриптор родительского окна (рабочий стол)
 		NULL, // дескриптор дочернего окна или меню
-		hThisInst, // дескриптор эксземпл€ра приложени€
+		hThisInst, // дескриптор экземпл€ра приложени€
 		NULL); // указатель на данные создани€ окна
 
 	//создание кнопки
@@ -197,7 +197,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 		30,  // высота кнопки
 		hwnd,  // дескриптор родительского окна (окно программы)
 		NULL, // дескриптор дочернего окна или меню
-		hThisInst, // дескриптор эксземпл€ра приложени€
+		hThisInst, // дескриптор экземпл€ра приложени€
 		NULL); // указатель на данные создани€ окна
 
 	// —оздание потока дл€ запуска функции ThreadFunc
