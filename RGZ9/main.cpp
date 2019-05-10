@@ -93,6 +93,9 @@ DWORD WINAPI ThreadFunc(void*)
 	}
 	else // если библиотека НЕ загрузилась 
 	{
+		// формируем сообщение об ошибке для окна
+		text_net = "Файл ";
+		text_net += LIB_NAME; text_net += " не найден!";
 		// формируем сообщение об ошибке и выводим диалоговое окно
 		text_error = "Файл ";
 		text_error += LIB_NAME; text_error += " не найден!\n";
