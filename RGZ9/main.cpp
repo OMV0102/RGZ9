@@ -23,7 +23,7 @@ DWORD WINAPI ThreadFunc(void*)
 	{
 		// числовые флаги равные 1, если ДА, 0, если НЕТ, -1, если значение неопределенно 
 		int flag_connect; // наличие подключения
-		int flag_HT; // поддрежка HT
+		int flag_HT; // поддержка HT
 
 		text_error = "";  // зануляем строку для вывода текста ошибок
 
@@ -99,7 +99,7 @@ DWORD WINAPI ThreadFunc(void*)
 		text_error = "Файл ";
 		text_error += LIB_NAME; text_error += " не найден!\n";
 		text_error += "Поместите файл "; text_error += LIB_NAME; text_error += " в папку с программой\n";
-		text_error += "и запустите программу еще раз.";
+		text_error += "и перезапустите программу.";
 		MessageBox(hwnd, text_error.c_str(), "Ошибка", MB_OK | MB_ICONERROR);
 	}
 	return 0;
